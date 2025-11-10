@@ -4,7 +4,7 @@ The goal of this project is to build testing suite for [SteelMC](https://github.
 Which should test automatic blocks, items and more.
 
 ## Current Plan
- - [ ] Write a json parser
+ - [ ] Write a json format
  - [ ] Write a chunk generator
  - [ ] Write a runner which handels the communication with SteelMC
 
