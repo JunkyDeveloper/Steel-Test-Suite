@@ -7,7 +7,7 @@ use std::path::Path;
 use std::{fs, io};
 use test_suite_json::SimulationRun;
 
-pub fn load_scoped_tests(scope: &String) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+pub(crate) fn load_scoped_tests(scope: &String) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     if !Path::new("index.json").exists() {
         println!("Index does not exists, so need to build the index first");
         generate_index(TEST_PATH)?;
@@ -27,7 +27,7 @@ pub fn load_scoped_tests(scope: &String) -> Result<Vec<String>, Box<dyn std::err
     Ok(test_paths)
 }
 
-pub fn get_all_test_files(start_dir: &Path) -> BTreeMap<String, String> {
+pub(crate) fn get_all_test_files(start_dir: &Path) -> BTreeMap<String, String> {
     let mut dirs = vec![start_dir.to_path_buf()];
     let mut index: BTreeMap<String, String> = BTreeMap::new();
 
@@ -56,7 +56,7 @@ pub fn get_all_test_files(start_dir: &Path) -> BTreeMap<String, String> {
     index
 }
 
-pub fn generate_index(path: &str) -> io::Result<()> {
+pub(crate) fn generate_index(path: &str) -> io::Result<()> {
     let start_dir = Path::new(path);
     if !start_dir.is_dir() {
         eprintln!("'{}' is no directory", start_dir.display());
@@ -72,7 +72,7 @@ pub fn generate_index(path: &str) -> io::Result<()> {
     Ok(())
 }
 
-pub fn get_all_tests_paths() -> Result<Vec<String>, Box<dyn std::error::Error>> {
+pub(crate) fn get_all_tests_paths() -> Result<Vec<String>, Box<dyn std::error::Error>> {
     let map: BTreeMap<String, String>;
     let mut test_paths = vec![];
     if !Path::new("index.json").exists() {
@@ -90,7 +90,7 @@ pub fn get_all_tests_paths() -> Result<Vec<String>, Box<dyn std::error::Error>> 
     Ok(test_paths)
 }
 
-pub fn get_simulation_run(path: &String) -> Result<SimulationRun, Box<dyn std::error::Error>> {
+pub(crate) fn get_simulation_run(path: &String) -> Result<SimulationRun, Box<dyn std::error::Error>> {
     // Extract the data from the simulation run file
     let file = File::open(path)?;
     let reader = BufReader::new(file);
