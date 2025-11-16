@@ -1,7 +1,7 @@
 [package]
-name = "test-suite-chunk"
+name = "flint-steel-chunk"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
-test-suite-json = { path = "../test-suite-json" }
+flint-core.workspace = true

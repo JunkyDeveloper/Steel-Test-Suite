@@ -1,11 +1,11 @@
 [package]
-name = "test-suite"
+name = "flint-steel"
 version.workspace = true
 edition.workspace = true
 
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true
-test-suite-chunk = { path = "../test-suite-chunk" }
-test-suite-json = { path = "../test-suite-json" }
+flint-steel-chunk = { path = "../flint-steel-chunk" }
+flint-core.workspace = true
 # rsjsonnet = "0.4.0" # for jsonnet support

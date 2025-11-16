@@ -1,13 +1,13 @@
 use crate::TEST_PATH;
+use flint_core::test_spec::TestSpec;
 use serde_json::to_string_pretty;
 use std::collections::{BTreeMap, HashMap};
 use std::fs::{File, OpenOptions};
 use std::io::{BufReader, Write};
 use std::path::Path;
 use std::{fs, io};
-use test_suite_json::SimulationRun;
 
-pub(crate) fn load_scoped_tests(scope: &String) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+pub(crate) fn load_scoped_tests(scope: &[String]) -> Result<Vec<String>, Box<dyn std::error::Error>> {
     if !Path::new("index.json").exists() {
         println!("Index does not exists, so need to build the index first");
         generate_index(TEST_PATH)?;
@@ -15,21 +15,22 @@ pub(crate) fn load_scoped_tests(scope: &String) -> Result<Vec<String>, Box<dyn s
     let mut test_paths = vec![];
     let file = File::open("index.json")?;
     let reader = BufReader::new(file);
-    let map: HashMap<String, String> =
+    let map: HashMap<String, Vec<String>> =
         serde_json::from_reader(reader).expect("broken index, isn't json!");
-    let is_dir = scope.ends_with(":");
     for (k, v) in &map {
-        if (k.starts_with(scope) && is_dir) || k == scope {
-            println!("added test to current run: '{}' ", k);
-            test_paths.push(v.clone());
+        if scope.contains(&k) {
+            for path in v{
+                println!("added test to current run: '{}' ", path);
+                test_paths.push(path.clone());
+            }
         }
     }
     Ok(test_paths)
 }
 
-pub(crate) fn get_all_test_files(start_dir: &Path) -> BTreeMap<String, String> {
+pub(crate) fn get_all_test_files(start_dir: &Path) -> Vec<String> {
     let mut dirs = vec![start_dir.to_path_buf()];
-    let mut index: BTreeMap<String, String> = BTreeMap::new();
+    let mut index: Vec<String> = Vec::new();
 
     while let Some(dir) = dirs.pop() {
         if let Ok(entries) = fs::read_dir(&dir) {
@@ -39,15 +40,7 @@ pub(crate) fn get_all_test_files(start_dir: &Path) -> BTreeMap<String, String> {
                     dirs.push(path);
                 } else if let Some(ext) = path.extension() {
                     if ext == "json" {
-                        if let Ok(rel_path) = path.strip_prefix(start_dir) {
-                            let key = rel_path
-                                .with_extension("")
-                                .components()
-                                .map(|c| c.as_os_str().to_string_lossy())
-                                .collect::<Vec<_>>()
-                                .join(":");
-                            index.insert(key, path.to_str().unwrap().to_string());
-                        }
+                        index.push(path.to_str().unwrap().to_string());
                     }
                 }
             }
@@ -63,36 +56,48 @@ pub(crate) fn generate_index(path: &str) -> io::Result<()> {
         std::process::exit(1);
     }
     let index = get_all_test_files(start_dir);
-    let index = to_string_pretty(&index).expect("hash_map for index is broken");
+    let mut new_index: BTreeMap<String, Vec<String>> = BTreeMap::new();
+    for i in index {
+        let file = File::open(i.clone())?;
+        let reader = BufReader::new(file);
+        let test: TestSpec =
+            serde_json::from_reader(reader).expect("broken test file, isn't json!");
+        for tag in &test.tags {
+            if let Some(vec) = new_index.get_mut(tag){
+                vec.push(i.clone())
+            }
+            else {
+                new_index.insert(tag.clone(), vec![i.clone()]);
+            }
+        }
+        if test.tags.is_empty()
+        {
+            if let Some(vec) = new_index.get_mut("default"){
+                vec.push(i.clone())
+            }
+            else {
+                new_index.insert("default".to_string(), vec![i.clone()]);
+            }
+        }
+    }
+    let index_string = to_string_pretty(&new_index).expect("BTree for index is broken");
     let mut file = OpenOptions::new()
         .create(true)
         .write(true)
         .open("index.json")?;
-    file.write_all(index.as_bytes())?;
+    file.write_all(index_string.as_bytes())?;
     Ok(())
 }
 
 pub(crate) fn get_all_tests_paths() -> Result<Vec<String>, Box<dyn std::error::Error>> {
-    let map: BTreeMap<String, String>;
-    let mut test_paths = vec![];
+    let test_paths: Vec<String>;
     if !Path::new("index.json").exists() {
         println!("Index does not exists, so need to build the index first");
-        map = get_all_test_files(Path::new(TEST_PATH));
+        test_paths = get_all_test_files(Path::new(TEST_PATH));
     } else {
         let file = File::open("index.json")?;
         let reader = BufReader::new(file);
-        map = serde_json::from_reader(reader).expect("broken index, isn't json!");
-    }
-    for (k, v) in &map {
-        println!("added test to current run: '{}' ", k);
-        test_paths.push(v.clone());
+        test_paths = serde_json::from_reader(reader).expect("broken index, isn't json!");
     }
     Ok(test_paths)
-}
-
-pub(crate) fn get_simulation_run(path: &String) -> Result<SimulationRun, Box<dyn std::error::Error>> {
-    // Extract the data from the simulation run file
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-    Ok(serde_json::from_reader(reader).expect("broken test file, isn't json!"))
 }

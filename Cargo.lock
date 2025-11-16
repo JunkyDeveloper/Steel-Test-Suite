@@ -3,6 +3,39 @@
 version = 4
 
 [[package]]
+name = "anyhow"
+version = "1.0.100"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
+
+[[package]]
+name = "flint-core"
+version = "0.1.0"
+source = "git+https://github.com/FlintTestMC/flint-core.git#ae166b5a41301a92046fe0eb3e12c21def792b8c"
+dependencies = [
+ "anyhow",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "flint-steel"
+version = "0.1.0"
+dependencies = [
+ "flint-core",
+ "flint-steel-chunk",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "flint-steel-chunk"
+version = "0.1.0"
+dependencies = [
+ "flint-core",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -90,30 +123,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
-]
-
-[[package]]
-name = "test-suite"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
- "test-suite-chunk",
- "test-suite-json",
-]
-
-[[package]]
-name = "test-suite-chunk"
-version = "0.1.0"
-dependencies = [
- "test-suite-json",
-]
-
-[[package]]
-name = "test-suite-json"
-version = "0.1.0"
-dependencies = [
- "serde",
 ]
 
 [[package]]
