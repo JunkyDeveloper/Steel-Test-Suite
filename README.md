@@ -24,19 +24,18 @@ cargo run --package flint-steel --bin flint-steel -- index
 ```
 
 ### Scoped tests
-You have also the option to run tests in a specific scope a scope is the directory.
-A scope ends with `:` and will run all tests which are below that. You can nest as much scopes you want.
+You have also the option to run tests from different tags a tag is specified in the test file.
+Each tag is seperated via a space.
 
 ```bash
-cargo run --package flint-steel --bin flint-steel -- new: 
+cargo run --package flint-steel --bin flint-steel -- redstone wall fences 
 ```
 
-To run a single test you add the full scope to it, this will a single test new:test
-
+To run all tests without a tag you can do:
 ```bash
-cargo run --package flint-steel --bin flint-steel -- new:test 
+cargo run --package flint-steel --bin flint-steel -- default 
 ```
-
+You can add the default tag to all other tags
 
 ## Test files
 Currently the test files will be in json written.
