@@ -1,6 +1,6 @@
 use std::env;
 use std::path::Path;
-use flint_core::test_spec::TestSpec;
+use flint_core::index::Index;
 
 const TEST_PATH: &str = "./test";
 fn main() {
@@ -10,13 +10,13 @@ fn main() {
         match args[1].as_str() {
             "index" => {
                 println!("index");
-                if let Err(err) = TestSpec::generate_index(&Path::new(TEST_PATH)) {
+                if let Err(err) = Index::generate_index(&Path::new(TEST_PATH)) {
                     println!("error while generating index: {}", err);
                 }
             }
             _ => {
                 println!("Will run tests on a specific scope");
-                match TestSpec::load_tagged_tests_paths(&args[1..]) {
+                match Index::load_tagged_tests_paths(&args[1..]) {
                     Ok(_test_paths) => {
                         test_paths = _test_paths;
                     }
@@ -29,7 +29,7 @@ fn main() {
     } else {
         // Loads all test from the index
         println!("Will run all tests");
-        match TestSpec::get_all_tests_paths() {
+        match Index::get_all_tests_paths() {
             Ok(_test_paths) => test_paths = _test_paths,
             Err(err) => {
                 println!("error while getting all_tests_paths: {}", err);
